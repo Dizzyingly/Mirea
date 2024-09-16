@@ -1,0 +1,37 @@
+задача 1
+grep -o '^[^:]*' /etc/passwd | sort
+
+задача 2
+cat /etc/protocols | sort -nr -k1 | head -n 5 | awk
+
+задача 3
+#!/bin/bash
+
+Функция для вывода баннера
+banner() {
+  local text="$1"
+  local width=$((${#text} + 4))
+  local line=$(printf -- "-%.0s" $(seq 1 $width))
+
+  echo "+-$line-+"
+  echo "| $text |"
+  echo "+-$line-+"
+}
+
+# Проверка аргументов
+if [ -z "$1" ]; then
+  echo "Использование: $0 <текст>"
+  exit 1
+fi
+
+# Вызов функции баннера
+banner "$1"
+
+задача 4
+echo $( \
+ cat hello.c \
+ | tr '\n' ' ' \
+ | grep -Eo "[_a-zA-Z][_a-zA-Z0-9]*" \
+ | uniq \
+ | sort \
+)
