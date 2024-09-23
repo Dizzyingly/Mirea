@@ -35,3 +35,220 @@ echo $( \
  | uniq \
  | sort \
 )
+
+задача 5
+#!/bin/bash
+
+if [ "$#" -ne 2 ]; then
+    echo "Использование: $0 <команда> <путь к файлу>"
+    exit 1
+fi
+
+command_name="$1"
+file_path="$2"
+
+# Проверка файла
+if [ ! -f "$file_path" ]; then
+    echo "Ошибка: файл $file_path не найден."
+    exit 1
+fi
+
+# Проверка записи
+if [ ! -w /usr/local/bin ]; then
+    echo "Ошибка: нет прав на запись в /usr/local/bin."
+    exit 1
+fi
+
+# Копирование файла
+sudo cp "$file_path" "/usr/local/bin/$command_name"
+
+# Установка прав доступа
+sudo chmod 755 "/usr/local/bin/$command_name"
+
+echo "Команда $command_name зарегистрирована успешно."
+
+задача 6
+#!/bin/bash
+
+# Проверка наличия аргументов
+if [ "$#" -eq 0 ]; then
+    echo "Использование: $0 <путь_к_директории>"
+    exit 1
+fi
+
+# Путь к директории
+dir_path="$1"
+
+# Проверка существования директории
+if [ ! -d "$dir_path" ]; then
+    echo "Ошибка: $dir_path не является директорией."
+    exit 1
+fi
+
+# Перебор файлов в директории
+for file in "$dir_path"/*; do
+    # Проверка, является ли объект файлом
+    if [ -f "$file" ]; then
+        # Получение расширения файла
+        extension="${file##*.}"
+
+        # Проверка расширения файла
+        if [[ "$extension" == "c" || "$extension" == "js" || "$extension" == "py" ]]; then
+            # Проверка наличия комментария в первой строке
+            first_line=$(head -n 1 "$file")
+            if [[ "$first_line" =~ ^#.*$ || "$first_line" =~ ^//.*$ || "$first_line" =~ ^""".*""" ]]; then
+                echo "Файл $file содержит комментарий в первой строке."
+            else
+                echo "Файл $file не содержит комментария в первой строке."
+            fi
+        fi
+    fi
+done
+
+задача 7
+#!/bin/bash
+
+# Проверка наличия аргументов
+if [ "$#" -ne 1 ]; then
+    echo "Использование: $0 <путь_к_директории>"
+    exit 1
+fi
+
+# Путь к директории
+dir_path="$1"
+
+# Проверка существования директории
+if [ ! -d "$dir_path" ]; then
+    echo "Ошибка: $dir_path не является директорией."
+    exit 1
+fi
+
+# Словарь для хранения хешей файлов
+declare -A file_hashes
+
+# Функция для поиска дубликатов
+find_duplicates() {
+    local dir="$1"
+    for file in "$dir"/*; do
+        if [ -f "$file" ]; then
+            # Вычисление хеша файла
+            file_hash=$(sha256sum "$file" | cut -d' ' -f1)
+
+            # Сохранение хеша в словаре
+            if [ -z "${file_hashes[$file_hash]}" ]; then
+                file_hashes[$file_hash]="$file"
+            else
+                # Если хеш уже есть в словаре, добавляем файл к списку дубликатов
+                file_hashes[$file_hash]+=" $file"
+            fi
+        elif [ -d "$file" ]; then
+            # Рекурсивный поиск в подкаталогах
+            find_duplicates "$file"
+        fi
+    done
+}
+
+# Вызов функции поиска дубликатов
+find_duplicates "$dir_path"
+
+# Вывод найденных дубликатов
+for hash in "${!file_hashes[@]}"; do
+    files="${file_hashes[$hash]}"
+    if [ $(echo "$files" | wc -w) -gt 1 ]; then
+        echo "Дубликаты:"
+        echo "$files"
+        echo
+    fi
+done
+
+задача 8
+#!/bin/bash
+
+# Проверка наличия аргументов
+if [ "$#" -ne 2 ]; then
+    echo "Использование: $0 <путь_к_директории> <расширение_файлов>"
+    exit 1
+fi
+
+# Путь к директории и расширение файлов
+dir_path="$1"
+file_extension="$2"
+
+# Проверка существования директории
+if [ ! -d "$dir_path" ]; then
+    echo "Ошибка: $dir_path не является директорией."
+    exit 1
+fi
+
+# Создание архива tar
+tar_file="${dir_path##*/}_${file_extension//./}_archive.tar"
+echo "Создание архива: $tar_file"
+
+# Поиск и архивирование файлов с указанным расширением
+find "$dir_path" -type f -name "*.$file_extension" -exec tar -rf "$tar_file" {} \;
+
+# Проверка успешности архивирования
+if [ $? -eq 0 ]; then
+    echo "Архивирование завершено успешно."
+else
+    echo "Ошибка при архивировании."
+    exit 1
+fi
+
+задача 9
+#!/bin/bash
+
+# Проверка наличия аргументов
+if [ "$#" -ne 2 ]; then
+    echo "Использование: $0 <входной_файл> <выходной_файл>"
+    exit 1
+fi
+
+# Входной и выходной файлы
+input_file="$1"
+output_file="$2"
+
+# Проверка существования входного файла
+if [ ! -f "$input_file" ]; then
+    echo "Ошибка: файл $input_file не найден."
+    exit 1
+fi
+
+# Замена последовательностей 4 пробелов на табуляцию
+sed 's/    /\t/g' "$input_file" > "$output_file"
+
+# Проверка успешности замены
+if [ $? -eq 0 ]; then
+    echo "Замена выполнена успешно. Результат сохранен в $output_file."
+else
+    echo "Ошибка при замене."
+    exit 1
+fi
+
+задача 10
+#!/bin/bash
+
+# Проверка наличия аргументов
+if [ "$#" -ne 1 ]; then
+    echo "Использование: $0 <путь_к_директории>"
+    exit 1
+fi
+
+# Путь к директории
+dir_path="$1"
+
+# Проверка существования директории
+if [ ! -d "$dir_path" ]; then
+    echo "Ошибка: $dir_path не является директорией."
+    exit 1
+fi
+
+# Поиск и вывод пустых текстовых файлов
+empty_files=$(find "$dir_path" -type f -size 0c -exec file {} \; | grep -E 'ASCII text' | cut -d':' -f1)
+
+if [ -z "$empty_files" ]; then
+    echo "В директории $dir_path нет пустых текстовых файлов."
+else
+    echo "Пустые текстовые файлы в директории $dir_path:"
+    echo "$empty_files"
+fi
