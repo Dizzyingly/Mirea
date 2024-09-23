@@ -23,16 +23,27 @@ cat /etc/protocols | sort -nr -k1 | head -n 5 | awk
 
 ## Задача 3
 
-Написать программу banner средствами bash для вывода текстов, как в следующем примере (размер баннера должен меняться!):
+#!/bin/bash
 
-```
-[root@localhost ~]# ./banner "Hello from RTU MIREA!"
-+-----------------------+
-| Hello from RTU MIREA! |
-+-----------------------+
-```
+Функция для вывода баннера
+banner() {
+  local text="$1"
+  local width=$((${#text} + 4))
+  local line=$(printf -- "-%.0s" $(seq 1 $width))
 
-Перед отправкой решения проверьте его в ShellCheck на предупреждения.
+  echo "+-$line-+"
+  echo "| $text |"
+  echo "+-$line-+"
+}
+
+# Проверка аргументов
+if [ -z "$1" ]; then
+  echo "Использование: $0 <текст>"
+  exit 1
+fi
+
+# Вызов функции баннера
+banner "$1"
 
 ## Задача 4
 
