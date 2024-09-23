@@ -6,7 +6,7 @@
 
 ## Задача 1
 
-grep -o '^[^:]*' /etc/passwd | sort
+findstr /v "^#" passwd | findstr /v "^$" | sort
 
 ## Задача 2
 
